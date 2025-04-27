@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type GenericEmail struct {
 	From            string   `json:"from"`
 	To              string   `json:"to"`
@@ -17,5 +19,12 @@ type TransactionResume struct {
 	AverageDebitTransactions  float64        `json:"average_debit_transactions"`
 	TotalCreditTransactions   int            `json:"total_credit_transactions"`
 	TotalDebitTransactions    int            `json:"total_debit_transactions"`
+	Transactions              []Transaction  `json:"-"`
 	TotalTransactionsByMonth  map[string]int `json:"total_transactions_by_month"`
+}
+
+type Transaction struct {
+	Amount float64   `json:"amount"`
+	Type   int       `json:"type"`
+	Date   time.Time `json:"date"`
 }

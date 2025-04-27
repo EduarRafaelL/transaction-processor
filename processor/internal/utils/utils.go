@@ -7,14 +7,14 @@ import (
 	"time"
 )
 
-func CheckTransacctionType(number float64, creditTransactions, debitTransactions *[]float64) {
+func GetTransactionType(number float64) int {
 	if number > 0 {
-		*creditTransactions = append(*creditTransactions, number)
+		return 1
 	}
 	if number < 0 {
-		*debitTransactions = append(*debitTransactions, number)
+		return 2
 	}
-
+	return 0
 }
 
 func GetMonthByNumber(number int) string {
@@ -22,7 +22,7 @@ func GetMonthByNumber(number int) string {
 	return month.String()
 }
 
-func GateTransactionMonth(date string) int {
+func GetTransactionMonth(date string) int {
 	dateParts := strings.Split(date, "/")
 	month := dateParts[0]
 	monthInt, err := strconv.Atoi(month)
@@ -31,4 +31,15 @@ func GateTransactionMonth(date string) int {
 		return 0
 	}
 	return monthInt
+}
+
+func ParseDate(date string) time.Time {
+	yearString := strconv.Itoa(time.Now().Year())
+	date = date + "/" + yearString
+	parsedDate, err := time.Parse("1/2/2006", date)
+	if err != nil {
+		fmt.Println("Error parsing date:", err)
+		return time.Time{}
+	}
+	return parsedDate
 }
