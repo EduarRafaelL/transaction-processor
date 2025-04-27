@@ -3,26 +3,53 @@ package services
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"transaction-processor/internal/models"
+	"transaction-processor/internal/repositories"
 	"transaction-processor/internal/utils"
 )
 
 type TransactionService struct {
-	//TransactionRepository TransactionRepository
+	transactionRepo *repositories.TransactionRepository
+	clientRepo      *repositories.ClientRepository
+	emailFrom       string
+	bodyTemplate    string
+	messageTemplate string
 }
 
-func NewTransactionService() *TransactionService {
-	return &TransactionService{}
+func NewTransactionService(clientRepo *repositories.ClientRepository, transactionRepo *repositories.TransactionRepository,
+	emailFrom, bodyTemplate, messageTemplate string) *TransactionService {
+	return &TransactionService{
+		transactionRepo: transactionRepo,
+		clientRepo:      clientRepo,
+		emailFrom:       emailFrom,
+		bodyTemplate:    bodyTemplate,
+		messageTemplate: messageTemplate,
+	}
 }
 
 func (ts *TransactionService) ProcessTransactionFileAndSendEmial(filePath string) error {
 	rows := utils.ReadCsvFile(filePath, ",")
+	clientId := strings.Split(filePath, ".")[0]
+	client, err := ts.getClientDetails(clientId)
+	if err != nil {
+		return fmt.Errorf("error getting client details: %w", err)
+	}
+
 	transactionResume, err := ts.getTransactionResume(rows)
 	if err != nil {
 		return err
 	}
-	fmt.Println("Transaction Resume:", transactionResume.Transactions)
-	//TODO: Send email with transactionResume
+	err = ts.saveTransactions(clientId, transactionResume.Transactions)
+	if err != nil {
+		return fmt.Errorf("error saving transactions: %w", err)
+	}
+	subject := fmt.Sprintf("Transaction Resume for %s", client.Name)
+	err = ts.sendEmail(transactionResume, client.Email, subject, ts.emailFrom,
+		ts.bodyTemplate, ts.messageTemplate, []string{})
+	if err != nil {
+		return fmt.Errorf("error sending emial: %w", err)
+	}
 	return nil
 }
 
@@ -77,25 +104,39 @@ func (ts *TransactionService) getTransactionResume(rows [][]string) (models.Tran
 	return transactionResume, nil
 }
 
-func (ts *TransactionService) getClientDetails() (models.Client, error) {
-	//TODO: Implement this method to get client details
-	return models.Client{}, nil
+func (ts *TransactionService) getClientDetails(clientId string) (models.Client, error) {
+	clientIdInt, err := strconv.Atoi(clientId)
+	if err != nil {
+		return models.Client{}, fmt.Errorf("error converting client ID to int: %w", err)
+	}
+	client, err := ts.clientRepo.GetClientByID(clientIdInt)
+	if err != nil {
+		return models.Client{}, fmt.Errorf("error getting client details: %w", err)
+	}
+	return *client, nil
 }
 
-func (ts *TransactionService) saveTransactions(transaction []models.Transaction) error {
-	//TODO: Implement this method to save transactions
+func (ts *TransactionService) saveTransactions(clientId string, transaction []models.Transaction) error {
+	for _, t := range transaction {
+		err := ts.transactionRepo.SaveTransaction(clientId, t)
+		if err != nil {
+			return fmt.Errorf("error saving transaction: %w", err)
+		}
+	}
 	return nil
 }
 
-func (ts *TransactionService) sendEmail(body any) error {
+func (ts *TransactionService) sendEmail(body any, to string, subject string, from string, bodyTemplate string,
+	messageTemplate string, attachments []string) error {
 	genericEmail := models.GenericEmail{
-		From:            "",
-		To:              "",
-		Subject:         "",
+		To:              to,
+		Subject:         subject,
+		From:            from,
 		Body:            body,
-		BodyTemplate:    "",
-		MessageTemplate: "",
-		Attachments:     []string{},
+		BodyTemplate:    bodyTemplate,
+		MessageTemplate: messageTemplate,
+		Attachments:     attachments,
 	}
-	return ts.sendEmail(genericEmail)
+	fmt.Println("Sending email to:", genericEmail.To)
+	return nil
 }

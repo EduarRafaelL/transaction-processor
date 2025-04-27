@@ -2,16 +2,6 @@ package models
 
 import "time"
 
-type GenericEmail struct {
-	From            string   `json:"from"`
-	To              string   `json:"to"`
-	Subject         string   `json:"subject"`
-	Body            any      `json:"body"`
-	BodyTemplate    string   `json:"bodyTemplate"`
-	MessageTemplate string   `json:"messageTemplate"`
-	Attachments     []string `json:"attachments"`
-}
-
 type TransactionResume struct {
 	TotalBalance              float64        `json:"total_balance"`
 	TotalTransactions         int            `json:"total_transactions"`
