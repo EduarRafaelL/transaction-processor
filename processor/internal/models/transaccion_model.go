@@ -1,0 +1,21 @@
+package models
+
+type GenericEmail struct {
+	From            string   `json:"from"`
+	To              string   `json:"to"`
+	Subject         string   `json:"subject"`
+	Body            any      `json:"body"`
+	BodyTemplate    string   `json:"bodyTemplate"`
+	MessageTemplate string   `json:"messageTemplate"`
+	Attachments     []string `json:"attachments"`
+}
+
+type TransactionResume struct {
+	TotalBalance              float64        `json:"total_balance"`
+	TotalTransactions         int            `json:"total_transactions"`
+	AverageCreditTransactions float64        `json:"average_credit_transactions"`
+	AverageDebitTransactions  float64        `json:"average_debit_transactions"`
+	TotalCreditTransactions   int            `json:"total_credit_transactions"`
+	TotalDebitTransactions    int            `json:"total_debit_transactions"`
+	TotalTransactionsByMonth  map[string]int `json:"total_transactions_by_month"`
+}
