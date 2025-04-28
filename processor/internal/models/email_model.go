@@ -9,3 +9,8 @@ type GenericEmail struct {
 	MessageTemplate string   `json:"messageTemplate"`
 	Attachments     []string `json:"attachments"`
 }
+
+type TransactionEmail struct {
+	UserName string `json:"userName"`
+	TransactionResume
+}

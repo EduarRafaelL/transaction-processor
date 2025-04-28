@@ -1,6 +1,7 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -45,7 +46,11 @@ func (ts *TransactionService) ProcessTransactionFileAndSendEmial(filePath string
 		return fmt.Errorf("error saving transactions: %w", err)
 	}
 	subject := fmt.Sprintf("Transaction Resume for %s", client.Name)
-	err = ts.sendEmail(transactionResume, client.Email, subject, ts.emailFrom,
+	transactionEmail := models.TransactionEmail{
+		UserName:          client.Name,
+		TransactionResume: transactionResume,
+	}
+	err = ts.sendEmail(transactionEmail, client.Email, subject, ts.emailFrom,
 		ts.bodyTemplate, ts.messageTemplate, []string{})
 	if err != nil {
 		return fmt.Errorf("error sending emial: %w", err)
@@ -105,11 +110,7 @@ func (ts *TransactionService) getTransactionResume(rows [][]string) (models.Tran
 }
 
 func (ts *TransactionService) getClientDetails(clientId string) (models.Client, error) {
-	clientIdInt, err := strconv.Atoi(clientId)
-	if err != nil {
-		return models.Client{}, fmt.Errorf("error converting client ID to int: %w", err)
-	}
-	client, err := ts.clientRepo.GetClientByID(clientIdInt)
+	client, err := ts.clientRepo.GetClientByID(clientId)
 	if err != nil {
 		return models.Client{}, fmt.Errorf("error getting client details: %w", err)
 	}
@@ -137,6 +138,13 @@ func (ts *TransactionService) sendEmail(body any, to string, subject string, fro
 		MessageTemplate: messageTemplate,
 		Attachments:     attachments,
 	}
-	fmt.Println("Sending email to:", genericEmail.To)
+	// Aquí conviertes body a JSON
+	jsonBody, err := json.MarshalIndent(genericEmail.Body, "", "  ")
+	if err != nil {
+		return fmt.Errorf("error marshaling email body: %w", err)
+	}
+
+	fmt.Println("Sending email with body:")
+	fmt.Println(string(jsonBody)) // Imprime el body como JSON bonito
 	return nil
 }

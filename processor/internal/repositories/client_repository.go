@@ -15,7 +15,7 @@ func NewClientRepository(db *sql.DB) *ClientRepository {
 	}
 }
 
-func (r *ClientRepository) GetClientByID(clientID int) (*models.Client, error) {
+func (r *ClientRepository) GetClientByID(clientID string) (*models.Client, error) {
 	query := `SELECT id, name, email FROM clients WHERE id = $1`
 	row := r.db.QueryRow(query, clientID)
 
