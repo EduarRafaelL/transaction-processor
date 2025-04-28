@@ -12,5 +12,4 @@ type EmailConfig struct {
 	UrlEmailService string `json:"url_email_service"`
 	BodyTemplate    string `json:"body_template"`
 	MessageTemplate string `json:"message_template"`
-	From            string `json:"from"`
 }

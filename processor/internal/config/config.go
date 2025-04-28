@@ -28,7 +28,6 @@ func LoadConfig() (*Config, error) {
 			UrlEmailService: os.Getenv("EMAIL_SERVICE_URL"),
 			BodyTemplate:    os.Getenv("EMAIL_BODY_TEMPLATE"),
 			MessageTemplate: os.Getenv("EMAIL_MESSAGE_TEMPLATE"),
-			From:            os.Getenv("EMAIL_FROM"),
 		},
 	}
 

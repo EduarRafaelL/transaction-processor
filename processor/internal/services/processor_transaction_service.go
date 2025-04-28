@@ -13,24 +13,24 @@ import (
 type TransactionService struct {
 	transactionRepo *repositories.TransactionRepository
 	clientRepo      *repositories.ClientRepository
-	emailFrom       string
 	bodyTemplate    string
 	messageTemplate string
+	delimiter       string
 }
 
 func NewTransactionService(clientRepo *repositories.ClientRepository, transactionRepo *repositories.TransactionRepository,
-	emailFrom, bodyTemplate, messageTemplate string) *TransactionService {
+	bodyTemplate, messageTemplate, delimiter string) *TransactionService {
 	return &TransactionService{
 		transactionRepo: transactionRepo,
 		clientRepo:      clientRepo,
-		emailFrom:       emailFrom,
 		bodyTemplate:    bodyTemplate,
 		messageTemplate: messageTemplate,
+		delimiter:       delimiter,
 	}
 }
 
 func (ts *TransactionService) ProcessTransactionFileAndSendEmial(filePath string) error {
-	rows := utils.ReadCsvFile(filePath, ",")
+	rows := utils.ReadCsvFile(filePath, ts.delimiter)
 	clientId := strings.Split(filePath, ".")[0]
 	client, err := ts.getClientDetails(clientId)
 	if err != nil {
@@ -50,7 +50,7 @@ func (ts *TransactionService) ProcessTransactionFileAndSendEmial(filePath string
 		UserName:          client.Name,
 		TransactionResume: transactionResume,
 	}
-	err = ts.sendEmail(transactionEmail, client.Email, subject, ts.emailFrom,
+	err = ts.sendEmail(transactionEmail, client.Email, subject,
 		ts.bodyTemplate, ts.messageTemplate, []string{})
 	if err != nil {
 		return fmt.Errorf("error sending emial: %w", err)
@@ -127,12 +127,11 @@ func (ts *TransactionService) saveTransactions(clientId string, transaction []mo
 	return nil
 }
 
-func (ts *TransactionService) sendEmail(body any, to string, subject string, from string, bodyTemplate string,
+func (ts *TransactionService) sendEmail(body any, to string, subject string, bodyTemplate string,
 	messageTemplate string, attachments []string) error {
 	genericEmail := models.GenericEmail{
 		To:              to,
 		Subject:         subject,
-		From:            from,
 		Body:            body,
 		BodyTemplate:    bodyTemplate,
 		MessageTemplate: messageTemplate,

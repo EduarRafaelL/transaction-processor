@@ -47,8 +47,8 @@ func configService() (*services.TransactionService, error) {
 	clientRepo := repositories.NewClientRepository(db)
 	transactionRepo := repositories.NewTransactionRepository(db)
 	// Initialize services
-	transactionService := services.NewTransactionService(clientRepo, transactionRepo, config.EmailConfig.From,
-		config.EmailConfig.BodyTemplate, config.EmailConfig.MessageTemplate)
+	transactionService := services.NewTransactionService(clientRepo, transactionRepo,
+		config.EmailConfig.BodyTemplate, config.EmailConfig.MessageTemplate, config.Delimiter)
 	return transactionService, nil
 
 }
