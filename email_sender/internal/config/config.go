@@ -27,7 +27,6 @@ func LoadConfig() (*Config, error) {
 			SMTPPort:     parseEnvToInt("SMTP_PORT"),
 			SMTPUsername: os.Getenv("SMTP_USERNAME"),
 			SMTPPassword: os.Getenv("SMTP_PASSWORD"),
-			From:         os.Getenv("EMAIL_FROM"),
 		},
 	}
 

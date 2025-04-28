@@ -13,5 +13,4 @@ type EmailConfig struct {
 	SMTPPort     int    `json:"smtp_port"`
 	SMTPUsername string `json:"smtp_username"`
 	SMTPPassword string `json:"smtp_password"`
-	From         string `json:"from"`
 }

@@ -1,8 +1,10 @@
 package services
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"transaction-processor/internal/models"
@@ -15,17 +17,19 @@ type TransactionService struct {
 	clientRepo      *repositories.ClientRepository
 	bodyTemplate    string
 	messageTemplate string
+	urlEmailService string
 	delimiter       string
 }
 
 func NewTransactionService(clientRepo *repositories.ClientRepository, transactionRepo *repositories.TransactionRepository,
-	bodyTemplate, messageTemplate, delimiter string) *TransactionService {
+	bodyTemplate, messageTemplate, delimiter, url_email_service string) *TransactionService {
 	return &TransactionService{
 		transactionRepo: transactionRepo,
 		clientRepo:      clientRepo,
 		bodyTemplate:    bodyTemplate,
 		messageTemplate: messageTemplate,
 		delimiter:       delimiter,
+		urlEmailService: url_email_service,
 	}
 }
 
@@ -129,6 +133,7 @@ func (ts *TransactionService) saveTransactions(clientId string, transaction []mo
 
 func (ts *TransactionService) sendEmail(body any, to string, subject string, bodyTemplate string,
 	messageTemplate string, attachments []string) error {
+
 	genericEmail := models.GenericEmail{
 		To:              to,
 		Subject:         subject,
@@ -137,13 +142,20 @@ func (ts *TransactionService) sendEmail(body any, to string, subject string, bod
 		MessageTemplate: messageTemplate,
 		Attachments:     attachments,
 	}
-	// Aquí conviertes body a JSON
-	jsonBody, err := json.MarshalIndent(genericEmail.Body, "", "  ")
+
+	payload, err := json.Marshal(genericEmail)
 	if err != nil {
 		return fmt.Errorf("error marshaling email body: %w", err)
 	}
+	fmt.Println("Payload: ", ts.urlEmailService, string(payload))
+	resp, err := http.Post(ts.urlEmailService, "application/json", bytes.NewBuffer(payload))
+	if err != nil {
+		return fmt.Errorf("error sending HTTP request: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf("email service returned non-2xx status: %d", resp.StatusCode)
+	}
 
-	fmt.Println("Sending email with body:")
-	fmt.Println(string(jsonBody)) // Imprime el body como JSON bonito
 	return nil
 }

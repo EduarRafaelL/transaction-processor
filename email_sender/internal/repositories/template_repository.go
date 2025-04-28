@@ -16,7 +16,7 @@ func NewTemplateRepository(db *sql.DB) *TemplateRepository {
 }
 
 func (r *TemplateRepository) GetTemplateByName(templateName string) (models.Template, error) {
-	query := `SELECT id, name, subject, body FROM templates WHERE name = $1`
+	query := `SELECT id, name, subject, html_body FROM templates WHERE name = $1`
 	row := r.db.QueryRow(query, templateName)
 
 	var template models.Template
