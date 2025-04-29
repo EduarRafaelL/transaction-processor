@@ -6,17 +6,19 @@ import (
 )
 
 type Config struct {
-	InputFilePath string             `json:"input_file_path"`
-	Delimiter     string             `json:"delimiter"`
-	DBConfig      models.DBConfig    `json:"db_config"`
-	EmailConfig   models.EmailConfig `json:"email_config"`
+	InputPath   string             `json:"input_path"`
+	OutputPath  string             `json:"output_path"`
+	Delimiter   string             `json:"delimiter"`
+	DBConfig    models.DBConfig    `json:"db_config"`
+	EmailConfig models.EmailConfig `json:"email_config"`
 }
 
 func LoadConfig() (*Config, error) {
 
 	config := &Config{
-		InputFilePath: os.Getenv("INPUT_FILE_PATH"),
-		Delimiter:     os.Getenv("DELIMITER"),
+		InputPath:  os.Getenv("INPUT_PATH"),
+		OutputPath: os.Getenv("OUTPUT_PATH"),
+		Delimiter:  os.Getenv("DELIMITER"),
 		DBConfig: models.DBConfig{
 			Host:     os.Getenv("DB_HOST"),
 			Port:     os.Getenv("DB_PORT"),
