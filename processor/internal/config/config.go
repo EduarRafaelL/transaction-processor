@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"transaction-processor/internal/models"
+	"transaction-processor/internal/utils"
 )
 
 type Config struct {
@@ -32,6 +33,7 @@ func LoadConfig() (*Config, error) {
 			MessageTemplate: os.Getenv("EMAIL_MESSAGE_TEMPLATE"),
 		},
 	}
-
+	//configure outputpath util variable
+	utils.Output_path = config.OutputPath
 	return config, nil
 }
