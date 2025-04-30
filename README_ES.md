@@ -90,6 +90,10 @@ Ejecuta los servicios con:
 docker-compose up --build
 ```
 
+Coloca un archivo .csv dentro de la carpeta input/ con el nombre del ID del cliente (por ejemplo: 12345678.csv).
+
+El servicio processor lo detectará, lo procesará, y enviará el resumen al correo configurado.
+
 Ejemplo de archivo CSV
 csv
 Copiar
@@ -101,3 +105,15 @@ id,date,amount
 2,8/2,-20.46
 3,8/13,+10
 ```
+
+## Manejo de errores
+Si el procesamiento de un archivo falla, se generará un log en la carpeta output/ con el nombre del archivo y el detalle del error.
+
+El sistema sigue funcionando y puede procesar otros archivos.
+
+
+## Consideraciones técnicas
+El sistema simula triggers como los de AWS Lambda/S3 usando fsnotify, para detectar archivos nuevos en tiempo real sin polling.
+
+Las plantillas de correo se almacenan en base de datos y se renderizan dinámicamente.
+
