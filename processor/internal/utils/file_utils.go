@@ -36,6 +36,9 @@ func ValidateCsvFile(records [][]string) error {
 	}
 
 	for i, row := range records {
+		if i == 0 {
+			continue
+		}
 		if len(row) < 3 {
 			return fmt.Errorf("row %d has invalid column count: expected 3, got %d", i+1, len(row))
 		}
