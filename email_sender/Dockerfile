@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine
+FROM golang:1.23.2-alpine
 
 WORKDIR /app
 
@@ -7,6 +7,6 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o email_sender ./cmd/email_sender
+RUN go build -o email_sender .
 
 ENTRYPOINT ["./email_sender"]

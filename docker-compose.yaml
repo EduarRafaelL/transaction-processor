@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: postgres-stori
+    restart: always
+    environment:
+      POSTGRES_USER: storiuser
+      POSTGRES_PASSWORD: stori123
+      POSTGRES_DB: storidb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - stori-network
+
+  email_sender:
+    build:
+      context: ./email_sender
+      dockerfile: Dockerfile
+    container_name: email-sender
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=storiuser
+      - DB_PASSWORD=stori123
+      - DB_NAME=storidb
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USERNAME=tu-correo@gmail.com
+      - SMTP_PASSWORD=tu-app-password
+    depends_on:
+      - postgres
+    networks:
+      - stori-network
+
+  processor:
+    build:
+      context: ./processor
+      dockerfile: Dockerfile
+    container_name: transaction-processor
+    restart: always
+    environment:
+      - INPUT_PATH=/input
+      - OUTPUT_PATH=/output
+      - DELIMITER=,
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=storiuser
+      - DB_PASSWORD=stori123
+      - DB_NAME=storidb
+      - EMAIL_BODY_TEMPLATE=Stori Base Template
+      - EMAIL_MESSAGE_TEMPLATE=Stori Transaction Summary Template
+      - EMAIL_SERVICE_URL=http://email-sender:8080/process-request-email
+    volumes:
+      - ./input:/input
+      - ./output:/output
+    depends_on:
+      - postgres
+      - email_sender
+    networks:
+      - stori-network
+
+volumes:
+  postgres_data:
+
+networks:
+  stori-network:
