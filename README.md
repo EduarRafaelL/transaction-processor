@@ -57,3 +57,62 @@ SMTP_PASSWORD=your_app_password
 EMAIL_BODY_TEMPLATE="Exact name of the body template"
 EMAIL_MESSAGE_TEMPLATE="Exact name of the message template"
 ```
+
+### PostgreSQL
+```bash
+POSTGRES_USER=storiuser
+POSTGRES_PASSWORD=storipassword
+POSTGRES_DB=storidb
+```
+
+### Processor
+```bash
+INPUT_PATH=/input
+OUTPUT_PATH=/output
+DELIMITER=,
+DB_HOST=postgres
+DB_PORT=5432
+DB_USER=storiuser
+DB_PASSWORD=storipassword
+DB_NAME=storidb
+EMAIL_SERVICE_URL=http://email-sender:8080/process-request-email
+```
+
+### SQL Scripts
+SQL scripts for creating the necessary tables (clients, transactions, templates) and sample data inserts are located in the /scripts folder.
+
+### Usage Instructions
+Clone the repository.
+
+Configure the required environment variables.
+
+Run the SQL scripts to set up the database schema and insert initial data.
+
+Start the services using:
+
+```bash
+docker-compose up --build
+```
+
+Add a .csv file to the input/ directory, named with a valid user ID (e.g., 12345678.csv).
+
+The processor service will automatically detect the file, process it, and trigger the email summary to be sent.
+
+Sample CSV File
+```csv
+id,date,amount
+0,7/15,+60.5
+1,7/28,-10.3
+2,8/2,-20.46
+3,8/13,+10
+```
+
+### Error Handling
+If a file fails to process, an error log will be generated in the output/ directory with the filename and error details.
+
+The system remains active and continues processing other files.
+
+### Technical Considerations
+The system uses fsnotify to simulate AWS Lambda/S3 triggers by detecting new files in real time without polling.
+
+Email templates are stored in the database and rendered dynamically at runtime.
