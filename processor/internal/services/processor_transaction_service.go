@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"transaction-processor/internal/models"
@@ -35,7 +36,8 @@ func NewTransactionService(clientRepo *repositories.ClientRepository, transactio
 
 func (ts *TransactionService) ProcessTransactionFileAndSendEmial(filePath string) error {
 	rows := utils.ReadCsvFile(filePath, ts.delimiter)
-	clientId := strings.Split(filePath, ".")[0]
+	clientId := strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
+
 	client, err := ts.getClientDetails(clientId)
 	if err != nil {
 		return fmt.Errorf("error getting client details: %w", err)
