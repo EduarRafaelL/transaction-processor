@@ -6,25 +6,50 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 )
 
 var Output_path string
 
-func ReadCsvFile(filePath, delimiter string) [][]string {
+func ReadCsvFile(filePath, delimiter string) ([][]string, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
-		log.Fatal("Unable to read input file "+filePath, err)
+		return nil, fmt.Errorf("unable to open file %s: %w", filePath, err)
 	}
 	defer f.Close()
 
 	csvReader := csv.NewReader(f)
 	csvReader.Comma = []rune(delimiter)[0]
+
 	records, err := csvReader.ReadAll()
 	if err != nil {
-		log.Fatal("Unable to parse file as CSV for "+filePath, err)
+		return nil, fmt.Errorf("unable to parse file %s as CSV: %w", filePath, err)
 	}
 
-	return records
+	return records, nil
+}
+
+func ValidateCsvFile(records [][]string) error {
+	if len(records) < 2 {
+		return fmt.Errorf("file must contain at least a header and one data row")
+	}
+
+	for i, row := range records {
+		if len(row) < 3 {
+			return fmt.Errorf("row %d has invalid column count: expected 3, got %d", i+1, len(row))
+		}
+
+		amount := row[2]
+		amount = strings.ReplaceAll(amount, "+", "") // remove '+' for parsing
+		_, err := strconv.ParseFloat(amount, 64)
+		if err != nil {
+			return fmt.Errorf("row %d has invalid amount value '%s': %v", i+1, row[2], err)
+		}
+
+	}
+
+	return nil
 }
 
 func LogError(fileName string, err error) {

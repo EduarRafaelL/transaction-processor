@@ -35,7 +35,16 @@ func NewTransactionService(clientRepo *repositories.ClientRepository, transactio
 }
 
 func (ts *TransactionService) ProcessTransactionFileAndSendEmial(filePath string) error {
-	rows := utils.ReadCsvFile(filePath, ts.delimiter)
+	rows, err := utils.ReadCsvFile(filePath, ts.delimiter)
+	if err != nil {
+		utils.LogError(filepath.Base(filePath), err)
+		return err
+	}
+
+	if err := utils.ValidateCsvFile(rows); err != nil {
+		utils.LogError(filepath.Base(filePath), err)
+		return err
+	}
 	clientId := strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
 
 	client, err := ts.getClientDetails(clientId)
